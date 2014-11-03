@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+
+	<context:component-scan base-package="aa.com.resource.controller"></context:component-scan>
+	<!-- <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName" value="oracle.jdbc.driver.OracleDriver">
+		</property>
+		<property name="url" value="jdbc:oracle:thin:@127.0.0.1:1521:orcl">
+		</property>
+		<property name="username" value="student"></property>
+		<property name="password" value="1"></property>
+	</bean> -->
+
+<!-- 属性文件读入 -->
+	<bean id="propertyConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath*:config_properties/jdbc.properties</value>
+				<value>classpath*:config_properties/hiberate.properties</value>
+				<!-- <value>classpath*:config_properties/myLog4j.properties</value> -->
+			</list>
+		</property>
+	</bean>
+<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+    <property name="driverClassName" value="${test.jdbc.driverClassName}"/>
+    <property name="url" value="${test.jdbc.url}"/>
+    <property name="username" value="${test.jdbc.username}"/>
+    <property name="password" value="${test.jdbc.password}"/>
+</bean>
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="packagesToScan">
+			<list>
+				<value>aa.com.resource.model</value>
+			</list>
+		</property>
+<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.cache.use_second_level_cache">${hibernate.cache.use_second_level_cache}</prop>
+				<prop key="hibernate.cache.provider_class">${hibernate.cache.provider_class}</prop>
+				<prop key="hibernate.cache.use_query_cache">${hibernate.cache.use_query_cache}</prop>
+				<prop key="hibernate.dialect">${hibernate.dialect}</prop>
+				<prop key="hibernate.hbm2ddl.auto">${hibernate.hbm2ddl.auto}</prop>
+				<prop key="hibernate.jdbc.fetch_size">${hibernate.jdbc.fetch_size}</prop>
+				<prop key="hibernate.jdbc.batch_size">${hibernate.jdbc.batch_size}</prop>
+				<prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
+				<prop key="hibernate.format_sql">${hibernate.format_sql}</prop>
+				<prop key="hibernate.connection.SetBigStringTryClob">${hibernate.connection.SetBigStringTryClob}</prop>
+				<prop key="hibernate.cache.provider_configuration_file_resource_path">${hibernate.cache.provider_configuration_file_resource_path}
+				</prop>
+			</props>
+		</property> 
+		<!-- <property name="eventListeners"> <map> <entry key="post-commit-insert"> 
+			<ref local="postCommitEventListener" /> </entry> <entry key="post-commit-update"> 
+			<ref local="postCommitEventListener" /> </entry> <entry key="post-commit-delete"> 
+			<ref local="postCommitEventListener" /> </entry> </map> </property> <property 
+			name="entityInterceptor"> <ref bean="myInterceptor" /> </property> -->
+		<property name="mappingResources">
+			<list>
+			</list>
+		</property>
+	</bean>
+
+	<!-- | 事务管理 -->
+	<bean id="transactionManager"
+		class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+	<bean id="txProxyTemplate" abstract="true"
+		class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+		<property name="transactionManager" ref="transactionManager" />
+		<property name="transactionAttributes">
+			<props>
+				<prop key="save*">PROPAGATION_REQUIRED</prop>
+				<prop key="delete*">PROPAGATION_REQUIRED</prop>
+				<prop key="update*">PROPAGATION_REQUIRED</prop>
+				<prop key="*">PROPAGATION_REQUIRED</prop>
+			</props>
+		</property>
+	</bean>
+	<!-- 用户操作 -->
+	<import resource="hiberate.xml" />
+</beans>
